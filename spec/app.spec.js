@@ -285,7 +285,7 @@ describe("/api", () => {
             "votes",
             "comment_count"
           ]);
-          console.log(body.articles);
+          
           let arr = body.articles;
           arr.forEach(obj => {
             expect(obj.author).to.eql("butter_bridge");
