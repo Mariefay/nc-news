@@ -20,8 +20,7 @@ exports.fetchArticlesById = id => {
         const article = arr[0][0];
         article.comment_count = arr[1];
         return arr[0];
-      }
-      else return [];
+      } else return [];
     });
 };
 
@@ -58,6 +57,18 @@ exports.fetchCommentsById = id => {
     .where("article_id", id);
 };
 
-exports.fetchAllArticles = () => {
-  return connection.select("*").from("articles");
+exports.fetchAllArticles = (sort_by, order_by, topic, writer) => {
+  return connection
+    .select("articles.*")
+    .from("articles")
+    .count({
+      comment_count: "comments.comments_id"
+    })
+    .leftJoin("comments", "articles.article_id", "comments.article_id")
+    .groupBy("articles.article_id")
+    .orderBy(sort_by || "created_at", order_by || "desc")
+    .modify((query) => {
+      if (topic) query.where({ topic: topic });
+      if(writer) query.where({"articles.author" : writer})
+    });
 };

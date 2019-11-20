@@ -62,8 +62,10 @@ exports.getComments = (req, res, next) => {
 };
 
 exports.getAllArticles = (req, res, next) => {
-  fetchAllArticles()
+  const { sort_by, order_by, topic, author } = req.query;
+  fetchAllArticles(sort_by, order_by, topic, author)
     .then(articles => {
+      if(articles.length === 0) return res.status(400).send({status:400, msg:"Author or topic doesn't exist"})
       res.status(200).send({ articles: articles });
     })
     .catch(next);

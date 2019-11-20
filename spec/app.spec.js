@@ -4,6 +4,8 @@ const chai = require("chai");
 const request = require("supertest");
 const { app } = require("../app");
 const connection = require("../db/connection");
+const chaiSorted = require("chai-sorted");
+chai.use(chaiSorted);
 
 describe("/api", () => {
   beforeEach(() => connection.seed.run());
@@ -229,7 +231,7 @@ describe("/api", () => {
           expect(body.msg).to.eql("Article Not Found");
         });
     });
-    xit("GET 200 : articles/:articleid gets us a an article obj", () => {
+    it("GET 200 : articles/:articleid gets us a an article obj", () => {
       return request(app)
         .get("/api/articles")
         .expect(200)
@@ -245,6 +247,59 @@ describe("/api", () => {
             "votes",
             "comment_count"
           ]);
+          expect(body.articles).to.be.descendingBy("created_at");
+        });
+    });
+    it("GET 200 : articles/:articleid gets us a an article obj", () => {
+      return request(app)
+        .get("/api/articles?sort_by=topic&order_by=asc")
+        .expect(200)
+        .expect("Content-Type", "application/json; charset=utf-8")
+        .then(({ body }) => {
+          expect(body.articles[0]).to.have.keys([
+            "author",
+            "title",
+            "article_id",
+            "body",
+            "topic",
+            "created_at",
+            "votes",
+            "comment_count"
+          ]);
+          expect(body.articles).to.be.ascendingBy("topic");
+        });
+    });
+    it("GET 200 : articles/:articleid gets us a an article obj", () => {
+      return request(app)
+        .get("/api/articles?topic=mitch&author=butter_bridge")
+        .expect(200)
+        .expect("Content-Type", "application/json; charset=utf-8")
+        .then(({ body }) => {
+          expect(body.articles[0]).to.have.keys([
+            "author",
+            "title",
+            "article_id",
+            "body",
+            "topic",
+            "created_at",
+            "votes",
+            "comment_count"
+          ]);
+          console.log(body.articles);
+          let arr = body.articles;
+          arr.forEach(obj => {
+            expect(obj.author).to.eql("butter_bridge");
+            expect(obj.topic).to.eql("mitch");
+          });
+        });
+    });
+    it("GET 400 :author doesn't exist", () => {
+      return request(app)
+        .get("/api/articles?author=marie")
+        .expect(400)
+        .expect("Content-Type", "application/json; charset=utf-8")
+        .then(({ body }) => {
+          expect(body.msg).to.eql("Author or topic doesn't exist");
         });
     });
   });
