@@ -18,6 +18,22 @@ describe("/api", () => {
           expect(body.topics[0]).to.have.keys(["slug", "description"]);
         });
     });
+    it("GET 404 : route not found", () => {
+      return request(app)
+        .get("/NotARoute")
+        .expect(404)
+        .then(({ body }) => {
+          expect(body.msg).to.eql("Route Not Found");
+        });
+    });
+    it("GET 404 : route not found", () => {
+      return request(app)
+        .get("/api/NotARoute")
+        .expect(404)
+        .then(({ body }) => {
+          expect(body.msg).to.eql("Route Not Found");
+        });
+    });
   });
   describe("/users/:username return user object", () => {
     it("GET 200 : userByUsername accessed", () => {
@@ -29,13 +45,20 @@ describe("/api", () => {
           expect(body.user).to.have.keys(["username", "avatar_url", "name"]);
         });
     });
-    it("GET 404 : route not found", () => {
+    it("GET 404 : id doesn't exist", () => {
       return request(app)
         .get("/api/users/marie")
         .expect(404)
         .then(({ body }) => {
-          
-          expect(body.msg).to.eql("404 Not Found");
+          expect(body.msg).to.eql("User Not Found");
+        });
+    });
+    it("GET 400 : invalid id", () => {
+      return request(app)
+        .get("/api/users/789")
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).to.eql("Bad Request");
         });
     });
   });
@@ -46,7 +69,7 @@ describe("/api", () => {
         .expect(200)
         .expect("Content-Type", "application/json; charset=utf-8")
         .then(({ body }) => {
-          expect(body.article).to.have.keys([
+          expect(body.article[0]).to.have.keys([
             "author",
             "title",
             "article_id",
@@ -56,6 +79,22 @@ describe("/api", () => {
             "votes",
             "comment_count"
           ]);
+        });
+    });
+    it("GET 404 : id doesn't exist", () => {
+      return request(app)
+        .get("/api/articles/99999")
+        .expect(404)
+        .then(({ body }) => {
+          expect(body.msg).to.eql("Article Not Found");
+        });
+    });
+    it("GET 400 : invalid id", () => {
+      return request(app)
+        .get("/api/articles/notAnId")
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).to.eql("Bad Request");
         });
     });
     it("PATCH 200 : articles/:id votes have been updated", () => {
@@ -77,6 +116,42 @@ describe("/api", () => {
           expect(body.article.votes).to.eql(101);
         });
     });
+    it("PATCH 404 : article id doesn't exist", () => {
+      return request(app)
+        .patch("/api/articles/1000")
+        .send({ inc_votes: 1 })
+        .expect(404)
+        .then(({ body }) => {
+          expect(body.msg).to.eql("Article Not Found");
+        });
+    });
+    it("PATCH 400 : article id is invalid", () => {
+      return request(app)
+        .patch("/api/articles/notAnId")
+        .send({ inc_votes: 1 })
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).to.eql("Bad Request");
+        });
+    });
+    it("PATCH 400 : body is empty", () => {
+      return request(app)
+        .patch("/api/articles/1")
+        .send({})
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).to.eql("Empty Body");
+        });
+    });
+    it("PATCH 400 : body is in an invalid format", () => {
+      return request(app)
+        .patch("/api/articles/1")
+        .send({ increments_votes: 1 })
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).to.eql("Invalid Body Format");
+        });
+    });
     it("POST 201 : /:id/comments posts a comment succesfully", () => {
       return request(app)
         .post("/api/articles/1/comments")
@@ -95,6 +170,33 @@ describe("/api", () => {
           expect(body.comments[0].author).to.equal("butter_bridge");
         });
     });
+    it("POST 400 invalid body", () => {
+      return request(app)
+        .post("/api/articles/1/comments")
+        .send({})
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).to.eql("Empty Body");
+        });
+    });
+    it("POST 400 invalid body format", () => {
+      return request(app)
+        .post("/api/articles/1/comments")
+        .send({ user: "butter_bridge", bodyy: "hi you" })
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).to.eql("Invalid Body Format");
+        });
+    });
+    it("POST 400 username doesn't exist", () => {
+      return request(app)
+        .post("/api/articles/1/comments")
+        .send({ username: "marie", body: "hi you" })
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).to.eql("Bad Request");
+        });
+    });
     it("GET 200 : /:id/comments sends comments successfully", () => {
       return request(app)
         .get("/api/articles/1/comments")
@@ -109,6 +211,22 @@ describe("/api", () => {
             "created_at",
             "body"
           ]);
+        });
+    });
+    it("GET 400 : invalid id", () => {
+      return request(app)
+        .get("/api/articles/notAnId/comments")
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).to.eql("Bad Request");
+        });
+    });
+    it("GET 404 : id doesn't exist", () => {
+      return request(app)
+        .get("/api/articles/99999")
+        .expect(404)
+        .then(({ body }) => {
+          expect(body.msg).to.eql("Article Not Found");
         });
     });
     xit("GET 200 : articles/:articleid gets us a an article obj", () => {
@@ -131,7 +249,7 @@ describe("/api", () => {
     });
   });
   describe("/comments", () => {
-    it.only("PATCH 200 : increases the votes succesfully given a comment id", () => {
+    it("PATCH 200 : increases the votes succesfully given a comment id", () => {
       return request(app)
         .patch("/api/comments/1")
         .send({ inc_votes: 2 })
@@ -149,10 +267,62 @@ describe("/api", () => {
           expect(body.comment.votes).to.eql(18);
         });
     });
+    it("PATCH 404 : comments id doesn't exist", () => {
+      return request(app)
+        .patch("/api/comments/1000")
+        .send({ inc_votes: 1 })
+        .expect(404)
+        .then(({ body }) => {
+          expect(body.msg).to.eql("Comment Not Found");
+        });
+    });
+    it("PATCH 400 : article id is invalid", () => {
+      return request(app)
+        .patch("/api/comments/notAnId")
+        .send({ inc_votes: 1 })
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).to.eql("Invalid Id");
+        });
+    });
+    it("PATCH 400 : body is empty", () => {
+      return request(app)
+        .patch("/api/comments/1")
+        .send({})
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).to.eql("Empty Body");
+        });
+    });
+    it("PATCH 400 : body is in an invalid format", () => {
+      return request(app)
+        .patch("/api/comments/1")
+        .send({ increments_votes: 1 })
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).to.eql("Invalid Body Format");
+        });
+    });
     it("Delete 205 : deletes comment succesfully given a comment id", () => {
       return request(app)
         .delete("/api/comments/1")
         .expect(204);
+    });
+    it("Delete 404 : resource to delete isn't found", () => {
+      return request(app)
+        .delete("/api/comments/10000")
+        .expect(404)
+        .then(({ body }) => {
+          expect(body.msg).to.eql("Resource to delete not found");
+        });
+    });
+    it("Delete 404 : resource to delete isn't found", () => {
+      return request(app)
+        .delete("/api/comments/notAnId")
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).to.eql("Bad Request");
+        });
     });
   });
 });

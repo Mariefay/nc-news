@@ -16,9 +16,12 @@ exports.fetchArticlesById = id => {
       return Promise.all([article, commentCounts]);
     })
     .then(arr => {
-      const article = arr[0][0];
-      article.comment_count = arr[1];
-      return article;
+      if (arr[1] !== 0) {
+        const article = arr[0][0];
+        article.comment_count = arr[1];
+        return arr[0];
+      }
+      else return [];
     });
 };
 
@@ -29,11 +32,13 @@ exports.patchVotesById = (id, body) => {
     .where("article_id", id)
     .returning("*")
     .then(article => {
-      const totalVotes = article[0].votes + body;
-      return connection("articles")
-        .where("article_id", id)
-        .update("votes", totalVotes)
-        .returning("*");
+      if (article.length > 0) {
+        const totalVotes = article[0].votes + body;
+        return connection("articles")
+          .where("article_id", id)
+          .update("votes", totalVotes)
+          .returning("*");
+      } else return article;
     });
 };
 

@@ -10,7 +10,9 @@ exports.getArticleById = (req, res, next) => {
   const { id } = req.params;
   fetchArticlesById(id)
     .then(article => {
-      res.status(200).send({ article: article });
+      if (article.length > 0) {
+        res.status(200).send({ article: article });
+      } else return res.status(404).send({ msg: "Article Not Found" });
     })
     .catch(next);
 };
@@ -18,9 +20,16 @@ exports.getArticleById = (req, res, next) => {
 exports.patchVotes = (req, res, next) => {
   const { id } = req.params;
   const { body } = req;
+  if (Object.keys(body).length === 0)
+    return res.status(400).send({ msg: "Empty Body" });
+  if (Object.keys(body).indexOf("inc_votes") === -1) {
+    return res.status(400).send({ msg: "Invalid Body Format" });
+  }
   patchVotesById(id, body.inc_votes)
     .then(updatedArticle => {
-      res.status(200).send({ article: updatedArticle[0] });
+      if (updatedArticle.length > 0)
+        res.status(200).send({ article: updatedArticle[0] });
+      else return next({ status: 404, msg: "Article Not Found" });
     })
     .catch(next);
 };
@@ -28,6 +37,14 @@ exports.patchVotes = (req, res, next) => {
 exports.postComment = (req, res, next) => {
   const { id } = req.params;
   const { body } = req;
+  if (Object.keys(body).length === 0)
+    return res.status(400).send({ msg: "Empty Body" });
+  if (
+    Object.keys(body).indexOf("username") === -1 ||
+    Object.keys(body).indexOf("body") === -1
+  ) {
+    return res.status(400).send({ msg: "Invalid Body Format" });
+  }
   postCommentById(id, body)
     .then(comment => {
       res.status(201).send({ comments: comment });
