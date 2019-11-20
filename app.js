@@ -13,4 +13,4 @@ app.all("/*", (req, res, next) => { res.status(404).send({ msg: 'Route Not Found
 
 
 
-module.exports = { app };
+module.exports = app ;

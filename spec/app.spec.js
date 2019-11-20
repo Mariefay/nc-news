@@ -2,7 +2,7 @@ process.env.NODE_ENV = "test";
 const { expect } = require("chai");
 const chai = require("chai");
 const request = require("supertest");
-const { app } = require("../app");
+const app  = require("../app");
 const connection = require("../db/connection");
 const chaiSorted = require("chai-sorted");
 chai.use(chaiSorted);
