@@ -22,13 +22,5 @@ exports.deleteCommentById = id => {
   return connection("comments")
     .where("comments_id", id)
     .del()
-    .then(rowsDeleted => {
-      if (rowsDeleted === 0) {
-        return Promise.reject({
-          status: 404,
-          msg: "Resource to delete not found"
-        });
-      }
-      return rowsDeleted;
-    });
+    
 };

@@ -21,6 +21,9 @@ exports.patchComment = (req, res, next) => {
 exports.deleteComment = (req, res, next) => {
   const { id } = req.params;
   deleteCommentById(id)
-    .then(() => res.sendStatus(204))
+    .then((rowsdeleted) => {
+      if (rowsdeleted === 0) return next(({ status: 404, msg: "Resource to delete not found" }))
+      res.sendStatus(204);
+} )
     .catch(next);
 };
