@@ -1,13 +1,19 @@
 const connection = require("../db/connection");
+const { checkArticleId, checkIfExists } = require("./checkIfExists-model");
 
 exports.fetchArticlesById = id => {
-    return connection
-      .select("articles.*")
-      .from("articles")
-      .leftJoin("comments", "comments.article_id", "=", "articles.article_id")
-      .where("articles.article_id", id)
-      .groupBy("articles.article_id")
-      .count("comment_id as comment_count");
+  return connection
+    .select("articles.*")
+    .from("articles")
+    .leftJoin("comments", "comments.article_id", "=", "articles.article_id")
+    .where("articles.article_id", id)
+    .groupBy("articles.article_id")
+    .count("comment_id as comment_count")
+    .then(articles => {
+      if (articles.length === 0) {
+        return Promise.reject({ status: 404, msg: "Article Not Found" });
+      } else return articles;
+    });
 };
 
 exports.patchVotesById = (id, body) => {
@@ -24,40 +30,56 @@ exports.patchVotesById = (id, body) => {
             .where("article_id", id)
             .update("votes", totalVotes)
             .returning("*");
-        }else return article
-      } else return article;
+        } else return article;
+      } else return Promise.reject({ status: 404, msg: "Article Not Found" });
     });
 };
 
 exports.postCommentById = (id, comment) => {
-  return connection
-    .select("article_id")
-    .from("articles")
-    .returning("*")
-    .then(articlesIds => {
-      const newIdArr = articlesIds.map(obj => obj.article_id)
-      if (newIdArr.indexOf(+id) !== -1) {
-        comment.author = comment.username;
-        comment.article_id = id;
-        delete comment.username;
-        return connection("comments")
-          .insert([comment])
-          .returning("*");
-      }
-      else return [];
-    });
+  if (!/[0-9]+/g.test(id))
+    return Promise.reject({ status: 400, msg: "Invalid Id" });
+  else if (Object.keys(comment).length === 0)
+    return Promise.reject({ status: 400, msg: "Empty Body" });
+  else if (
+    Object.keys(comment).indexOf("username") === -1 ||
+    Object.keys(comment).indexOf("body") === -1
+  ) {
+    return Promise.reject({ status: 400, msg: "Invalid Body Format" });
+  } else {
+    return connection
+      .select("article_id")
+      .from("articles")
+      .where("article_id", id)
+      .returning("*")
+      .then(articlesIds => {
+        if (articlesIds.length > 0) {
+          comment.author = comment.username;
+          comment.article_id = id;
+          delete comment.username;
+          return connection("comments")
+            .insert([comment])
+            .returning("*");
+        } else return Promise.reject({ status: 404, msg: "Article Not Found" });
+      });
+  }
 };
 
 exports.fetchCommentsById = (id, sort_by, order) => {
-  return connection
+  const comments = connection
     .select("author", "body", "comment_id", "created_at", "votes")
     .from("comments")
     .where("article_id", id)
-    .orderBy(sort_by || "created_at", order || "desc");
+    .orderBy(sort_by || "created_at", order || "desc")
+    .returning("*");
+  return Promise.all([comments, checkArticleId(id)]).then(arr => {
+    if (arr[0].length === 0 && arr[1].length === 0)
+      return Promise.reject({ status: 404, msg: "Article Id doesn't exist" });
+    else return arr[0];
+  });
 };
 
 exports.fetchAllArticles = (sort_by, order, topic, writer) => {
-    return connection
+  const articles = connection
     .select("articles.*")
     .from("articles")
     .count({
@@ -66,12 +88,14 @@ exports.fetchAllArticles = (sort_by, order, topic, writer) => {
     .leftJoin("comments", "articles.article_id", "comments.article_id")
     .groupBy("articles.article_id")
     .orderBy(sort_by || "created_at", order || "desc")
-      .modify(query => {
-        if (writer !== "NotAUser") {
-          if (topic) query.where({ topic: topic });
-          if (writer) query.where({ "articles.author": writer });
-        }
+    .modify(query => {
+      if (writer !== "NotAUser") {
+        if (topic) query.where({ topic: topic });
+        if (writer) query.where({ "articles.author": writer });
+      }
     });
-  
-  
+  return Promise.all([articles, checkIfExists(writer, topic)]).then((arr) => {
+    if (arr[0].length === 0 && arr[1].length === 0) return Promise.reject({ status: 404, msg: "Author or topic doesn't exist" });
+    else return arr[0];
+  })
 };

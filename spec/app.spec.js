@@ -156,24 +156,6 @@ describe("/api", () => {
           expect(body.msg).to.eql("Bad Request");
         });
     });
-    // xit("PATCH 400 : body is empty", () => {
-    //   return request(app)
-    //     .patch("/api/articles/1")
-    //     .send({})
-    //     .expect(400)
-    //     .then(({ body }) => {
-    //       expect(body.msg).to.eql("Empty Body");
-    //     });
-    // });
-    // xit("PATCH 400 : body is in an invalid format", () => {
-    //   return request(app)
-    //     .patch("/api/articles/1")
-    //     .send({ increments_votes: 1 })
-    //     .expect(400)
-    //     .then(({ body }) => {
-    //       expect(body.msg).to.eql("Invalid Body Format");
-    //     });
-    // });
     it("PATCH 200 : body is empty, returns same comment", () => {
       return request(app)
         .patch("/api/articles/1")
