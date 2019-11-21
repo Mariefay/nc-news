@@ -4,14 +4,14 @@ exports.patchCommentById = (id, newVotes) => {
   return connection
     .select("*")
     .from("comments")
-    .where("comments_id", id)
+    .where("comment_id", id)
     .returning("*")
     .then(comment => {
       if (comment.length > 0) {
         if (Object.keys(newVotes).length > 0) {
           const totalVotes = comment[0].votes + newVotes.inc_votes;
           return connection("comments")
-          .where("comments_id", id)
+          .where("comment_id", id)
           .update("votes", totalVotes)
           .returning("*");
         }
@@ -23,7 +23,7 @@ exports.patchCommentById = (id, newVotes) => {
 
 exports.deleteCommentById = id => {
   return connection("comments")
-    .where("comments_id", id)
+    .where("comment_id", id)
     .del()
     
 };

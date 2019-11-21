@@ -81,7 +81,7 @@ describe("/api", () => {
             "votes",
             "comment_count"
           ]);
-          expect(body.article.comment_count).to.eql(13)
+          expect(body.article.comment_count).to.equal(13)
         });
     });
     it("GET 200 : articles/:articleid works for articles with no comments", () => {
@@ -201,7 +201,7 @@ describe("/api", () => {
         .then(({ body }) => {
           expect(body.comment[0]).to.have.keys([
             "article_id",
-            "comments_id",
+            "comment_id",
             "author",
             "votes",
             "created_at",
@@ -220,13 +220,22 @@ describe("/api", () => {
           expect(body.msg).to.eql("Empty Body");
         });
     });
-    it("POST 404 invalid body", () => {
+    it("POST 404 id doesn't exist", () => {
       return request(app)
         .post("/api/articles/10000/comments")
         .send({ username: "butter_bridge", body: "hi you" })
         .expect(404)
         .then(({ body }) => {
           expect(body.msg).to.eql("Article Not Found");
+        });
+    });
+    it("POST 400 : article id is invalid", () => {
+      return request(app)
+        .post("/api/articles/notandId/comments")
+        .send({ username: "butter_bridge", body: "hi you" })
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).to.eql("Invalid Id");
         });
     });
     it("POST 400 invalid body format", () => {
@@ -254,7 +263,7 @@ describe("/api", () => {
         .expect("Content-Type", "application/json; charset=utf-8")
         .then(({ body }) => {
           expect(body.comments[0]).to.have.keys([
-            "comments_id",
+            "comment_id",
             "author",
             "votes",
             "created_at",
@@ -263,20 +272,29 @@ describe("/api", () => {
           expect(body.comments).to.be.descendingBy("created_at")
         });
     });
+    it("GET 200 : /:id/comments works for article with no comments", () => {
+      return request(app)
+        .get("/api/articles/2/comments")
+        .expect(200)
+        .expect("Content-Type", "application/json; charset=utf-8")
+        .then(({ body }) => {
+          expect(body.comments).to.eql([])
+        });
+    });
     it("GET 200 : /:id/comments sends comments properly sorted", () => {
       return request(app)
-        .get("/api/articles/1/comments?order=asc")
+        .get("/api/articles/1/comments?order=asc&sort_by=author")
         .expect(200)
         .expect("Content-Type", "application/json; charset=utf-8")
         .then(({ body }) => {
           expect(body.comments[0]).to.have.keys([
-            "comments_id",
+            "comment_id",
             "author",
             "votes",
             "created_at",
             "body"
           ]);
-          expect(body.comments).to.be.ascendingBy("created_at")
+          expect(body.comments).to.be.ascendingBy("author")
         });
     });
     it("GET 400 : invalid id", () => {
@@ -293,14 +311,6 @@ describe("/api", () => {
         .expect(404)
         .then(({ body }) => {
           expect(body.msg).to.eql("Article Id doesn't exist");
-        });
-    });
-    it("GET 404 : id doesn't exist", () => {
-      return request(app)
-        .get("/api/articles/99999")
-        .expect(404)
-        .then(({ body }) => {
-          expect(body.msg).to.eql("Article Not Found");
         });
     });
     it("GET 200 : articles/:articleid gets us a an article obj", () => {
@@ -411,7 +421,7 @@ describe("/api", () => {
         .expect("Content-Type", "application/json; charset=utf-8")
         .then(({ body }) => {
           expect(body.comment).to.have.keys([
-            "comments_id",
+            "comment_id",
             "author",
             "article_id",
             "votes",
@@ -446,7 +456,7 @@ describe("/api", () => {
         .expect(200)
         .then(({ body }) => {
           expect(body.comment).to.have.keys([
-            "comments_id",
+            "comment_id",
             "author",
             "article_id",
             "votes",

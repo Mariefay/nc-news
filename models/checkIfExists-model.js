@@ -15,3 +15,12 @@ exports.checkIfExists = (username, topic) => {
     }
  
 };
+
+exports.checkArticleId = id => {
+    if (id) {
+        return connection
+        .select("*")
+        .from("articles")
+        .where("article_id", id).returning("*");
+    }
+}

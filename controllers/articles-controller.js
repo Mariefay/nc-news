@@ -5,7 +5,7 @@ const {
   fetchCommentsById,
   fetchAllArticles
 } = require("../models/articles-model");
-const {checkIfExists } = require("../models/checkIfExists-model");
+const {checkIfExists, checkArticleId } = require("../models/checkIfExists-model");
 
 exports.getArticleById = (req, res, next) => {
   const { id } = req.params;
@@ -38,6 +38,7 @@ exports.patchVotes = (req, res, next) => {
 exports.postComment = (req, res, next) => {
   const { id } = req.params;
   const { body } = req;
+  if (!/[0-9]+/g.test(id)) return next({ status: 400, msg: "Invalid Id" })
   if (Object.keys(body).length === 0)
     return res.status(400).send({ msg: "Empty Body" });
   if (
@@ -61,9 +62,13 @@ exports.getComments = (req, res, next) => {
   fetchCommentsById(id, sort_by, order)
     .then(comments => {
       if (comments.length === 0)
-        return next({ status: 404, msg: "Article Id doesn't exist" });
-      res.status(200).send({ comments: comments });
+        return checkArticleId(id);
+      else return res.status(200).send({ comments: comments });
     })
+    .then((articles) => {
+      if (articles.length === 0) return next({ status: 404, msg: "Article Id doesn't exist" });
+      else return res.status(200).send({ comments: [] });
+      })
     .catch(next);
 };
 

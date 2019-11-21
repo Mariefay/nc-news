@@ -64,7 +64,7 @@ exports.postCommentById = (id, comment) => {
 
 exports.fetchCommentsById = (id, sort_by, order) => {
   return connection
-    .select("author", "body", "comments_id", "created_at", "votes")
+    .select("author", "body", "comment_id", "created_at", "votes")
     .from("comments")
     .where("article_id", id)
     .orderBy(sort_by || "created_at", order || "desc");
@@ -75,7 +75,7 @@ exports.fetchAllArticles = (sort_by, order, topic, writer) => {
     .select("articles.*")
     .from("articles")
     .count({
-      comment_count: "comments.comments_id"
+      comment_count: "comments.comment_id"
     })
     .leftJoin("comments", "articles.article_id", "comments.article_id")
     .groupBy("articles.article_id")
