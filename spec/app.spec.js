@@ -2,7 +2,7 @@ process.env.NODE_ENV = "test";
 const { expect } = require("chai");
 const chai = require("chai");
 const request = require("supertest");
-const app  = require("../app");
+const app = require("../app");
 const connection = require("../db/connection");
 const chaiSorted = require("chai-sorted");
 chai.use(chaiSorted);
@@ -81,7 +81,7 @@ describe("/api", () => {
             "votes",
             "comment_count"
           ]);
-          expect(body.article.comment_count).to.equal(13)
+          expect(body.article.comment_count).to.equal('13');
         });
     });
     it("GET 200 : articles/:articleid works for articles with no comments", () => {
@@ -100,7 +100,7 @@ describe("/api", () => {
             "votes",
             "comment_count"
           ]);
-          expect(body.article.comment_count).to.eql(0)
+          expect(body.article.comment_count).to.eql('0');
         });
     });
     it("GET 404 : id doesn't exist", () => {
@@ -199,7 +199,7 @@ describe("/api", () => {
         .expect(201)
         .expect("Content-Type", "application/json; charset=utf-8")
         .then(({ body }) => {
-          expect(body.comment[0]).to.have.keys([
+          expect(body.comment).to.have.keys([
             "article_id",
             "comment_id",
             "author",
@@ -207,10 +207,10 @@ describe("/api", () => {
             "created_at",
             "body"
           ]);
-          expect(body.comment[0].author).to.equal("butter_bridge");
+          expect(body.comment.author).to.equal("butter_bridge");
         });
     });
-    
+
     it("POST 400 invalid body", () => {
       return request(app)
         .post("/api/articles/1/comments")
@@ -269,7 +269,7 @@ describe("/api", () => {
             "created_at",
             "body"
           ]);
-          expect(body.comments).to.be.descendingBy("created_at")
+          expect(body.comments).to.be.descendingBy("created_at");
         });
     });
     it("GET 200 : /:id/comments works for article with no comments", () => {
@@ -278,7 +278,7 @@ describe("/api", () => {
         .expect(200)
         .expect("Content-Type", "application/json; charset=utf-8")
         .then(({ body }) => {
-          expect(body.comments).to.eql([])
+          expect(body.comments).to.eql([]);
         });
     });
     it("GET 200 : /:id/comments sends comments properly sorted", () => {
@@ -294,7 +294,7 @@ describe("/api", () => {
             "created_at",
             "body"
           ]);
-          expect(body.comments).to.be.ascendingBy("author")
+          expect(body.comments).to.be.ascendingBy("author");
         });
     });
     it("GET 400 : invalid id", () => {
@@ -367,7 +367,7 @@ describe("/api", () => {
             "votes",
             "comment_count"
           ]);
-          
+
           let arr = body.articles;
           arr.forEach(obj => {
             expect(obj.author).to.eql("butter_bridge");
@@ -497,83 +497,100 @@ describe("/api", () => {
         });
     });
   });
-  describe('INVALID METHODS', () => {
-    it('status:405', () => {
-      const invalidMethods = ['patch', 'put', 'delete','post'];
-      const methodPromises = invalidMethods.map((method) => {
-        return request(app)[method]('/api/topics')
+  describe("INVALID METHODS", () => {
+    it("status:405", () => {
+      const invalidMethods = ["patch", "put", "delete", "post"];
+      const methodPromises = invalidMethods.map(method => {
+        return request(app)
+          [method]("/api/topics")
           .expect(405)
           .then(({ body: { msg } }) => {
-            expect(msg).to.equal('method not allowed');
+            expect(msg).to.equal("method not allowed");
           });
       });
       return Promise.all(methodPromises);
     });
-    it('status:405', () => {
-      const invalidMethods = ['patch', 'put', 'delete', 'post'];
-      const methodPromises = invalidMethods.map((method) => {
-        return request(app)[method]('/api/articles')
+    it("status:405", () => {
+      const invalidMethods = ["patch", "put", "delete", "post"];
+      const methodPromises = invalidMethods.map(method => {
+        return request(app)
+          [method]("/api/articles")
           .expect(405)
           .then(({ body: { msg } }) => {
-            expect(msg).to.equal('method not allowed');
+            expect(msg).to.equal("method not allowed");
           });
       });
       return Promise.all(methodPromises);
     });
-    it('status:405', () => {
-      const invalidMethods = ['put', 'delete', 'post'];
-      const methodPromises = invalidMethods.map((method) => {
-        return request(app)[method]('/api/articles/1')
+    it("status:405", () => {
+      const invalidMethods = ["put", "delete", "post"];
+      const methodPromises = invalidMethods.map(method => {
+        return request(app)
+          [method]("/api/articles/1")
           .expect(405)
           .then(({ body: { msg } }) => {
-            expect(msg).to.equal('method not allowed');
+            expect(msg).to.equal("method not allowed");
           });
       });
       return Promise.all(methodPromises);
     });
-    it('status:405', () => {
-      const invalidMethods = ['patch', 'put', 'delete',];
-      const methodPromises = invalidMethods.map((method) => {
-        return request(app)[method]('/api/articles/1/comments')
+    it("status:405", () => {
+      const invalidMethods = ["patch", "put", "delete"];
+      const methodPromises = invalidMethods.map(method => {
+        return request(app)
+          [method]("/api/articles/1/comments")
           .expect(405)
           .then(({ body: { msg } }) => {
-            expect(msg).to.equal('method not allowed');
+            expect(msg).to.equal("method not allowed");
           });
       });
       return Promise.all(methodPromises);
     });
-    it('status:405', () => {
-      const invalidMethods = ['patch', 'put', 'delete','post'];
-      const methodPromises = invalidMethods.map((method) => {
-        return request(app)[method]('/api/users/sam')
+    it("status:405", () => {
+      const invalidMethods = ["patch", "put", "delete", "post"];
+      const methodPromises = invalidMethods.map(method => {
+        return request(app)
+          [method]("/api/users/sam")
           .expect(405)
           .then(({ body: { msg } }) => {
-            expect(msg).to.equal('method not allowed');
+            expect(msg).to.equal("method not allowed");
           });
       });
       return Promise.all(methodPromises);
     });
-    it('status:405', () => {
-      const invalidMethods = ['put','post','get'];
-      const methodPromises = invalidMethods.map((method) => {
-        return request(app)[method]('/api/comments/1')
+    it("status:405", () => {
+      const invalidMethods = ["put", "post", "get"];
+      const methodPromises = invalidMethods.map(method => {
+        return request(app)
+          [method]("/api/comments/1")
           .expect(405)
           .then(({ body: { msg } }) => {
-            expect(msg).to.equal('method not allowed');
+            expect(msg).to.equal("method not allowed");
           });
       });
       return Promise.all(methodPromises);
     });
-    it('status:405', () => {
-      const invalidMethods = ['put','post','get','patch','delete'];
-      const methodPromises = invalidMethods.map((method) => {
-        return request(app)[method]('/api')
+    it("status:405", () => {
+      const invalidMethods = ["put", "post", "patch", "delete"];
+      const methodPromises = invalidMethods.map(method => {
+        return request(app)
+        [method]("/api")
           .expect(405)
           .then(({ body: { msg } }) => {
-            expect(msg).to.equal('method not allowed');
+            expect(msg).to.equal("method not allowed");
           });
       });
       return Promise.all(methodPromises);
+    });
+  });
+  describe("/api description of all endpoints", () => {
+    it("GET 200 : returns JSON obj of all endpoints", () => {
+      return request(app)
+        .get("/api")
+        .expect(200)
+        .then(({body}) => {
+          expect(body.endpoints).to.be.an("object");
+        });
     });
   });
 });

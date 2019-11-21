@@ -1,27 +1,13 @@
 const connection = require("../db/connection");
 
 exports.fetchArticlesById = id => {
-  return connection
-    .select("*")
-    .from("comments")
-    .where("article_id", id)
-    .returning("*")
-    .then(comments => {
-      const commentCounts = comments.length;
-      const article = connection
-        .select("*")
-        .from("articles")
-        .where("article_id", id)
-        .returning("*");
-      return Promise.all([article, commentCounts]);
-    })
-    .then(arr => {
-      if (arr[0].length > 0) {
-        const article = arr[0][0];
-        article.comment_count = arr[1];
-        return arr[0];
-      } else return [];
-    });
+    return connection
+      .select("articles.*")
+      .from("articles")
+      .leftJoin("comments", "comments.article_id", "=", "articles.article_id")
+      .where("articles.article_id", id)
+      .groupBy("articles.article_id")
+      .count("comment_id as comment_count");
 };
 
 exports.patchVotesById = (id, body) => {

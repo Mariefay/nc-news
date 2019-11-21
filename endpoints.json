@@ -10,7 +10,7 @@
     }
   },
   "GET /api/articles": {
-    "description": "serves an array of all topics",
+    "description": "serves an array of all articles",
     "queries": ["author", "topic", "sort_by", "order"],
     "exampleResponse": {
       "articles": [
@@ -19,9 +19,104 @@
           "topic": "cooking",
           "author": "weegembump",
           "body": "Text from the article..",
-          "created_at": 1527695953341
-        }
+          "created_at": 1527695953341,
+          "votes" : 10,
+          "article_id" : 1
+        }, {"..." : "..."}
       ]
+    }
+  },
+  "GET /api/articles/:article_id" : {
+    "description": "serves an article object corresponding to the id demanded",
+    "queries": [],
+    "exampleResponse": {
+      "article": { 
+        "author" : "b",
+        "title" : "bjcbezc",
+        "article_id" : 1,
+        "body" : "hi",
+        "topic" : "cooking",
+        "created_at" : "date",
+        "votes" : 100,
+        "comment_count" : "13"
+      }
+  }
+},
+  "PATCH /api/articles/:article_id" : {
+    "description": "takes a value to increment the votes property of the article. Serves back the updated article",
+    "input" : {"inc_votes" : 2},
+    "queries": [],
+    "exampleResponse": {
+      "article": { 
+        "author" : "b",
+        "title" : "bjcbezc",
+        "article_id" : 1,
+        "body" : "hi",
+        "topic" : "cooking",
+        "created_at" : "date",
+        "votes" : 102,
+        "comment_count" : "13"
+      }
+    }
+  },
+  "POST /api/articles/:article_id/comments" : {
+    "description": "Takes a username and body, serves back the created comment with username value under author key and body value under body key",
+    "queries": [],
+    "input" : {"username" : "bl", "body": "hello"},
+    "exampleResponse": {
+      "comment": {
+       "article_id" : 1,
+       "comment_id" : 15,
+       "author" : "bl",
+       "votes": 0,
+       "created_at" : "time",
+       "body":"hello" }
+  }
+},
+  "GET /api/articles/:article_id/comments" : {
+    "description": "serves an array of all comments associated with id ",
+    "queries": ["order", "sort_by"],
+    "exampleResponse": {
+      "comments": [ {
+        "comment_id" : 1,
+        "author" : "bl",
+        "votes" : 0,
+        "created_at" : "time",
+        "body" : "bibibi"}, 
+        {"...": "..."}
+    ]
+    }
+  },
+  "PATCH /api/comments/:comment_id" : {
+    "description": "update the votes on a comment matching the id given, and serves back the updated comment",
+    "queries": [],
+    "input" : {"inc_votes" : 10},
+    "exampleResponse": {
+      "comment": {
+        "comment_id" : 1,
+        "author" : "bl",
+        "votes" : 10,
+        "created_at" : "time",
+        "body" : "bibibi"}
+      }
+  },
+  "DELETE /api/comments/:comment_id" : {
+    "description": "delete the comment matching the id demanded",
+    "queries": [],
+    "exampleResponse": null
+  }, 
+
+  "GET /api/users/:username" : {
+    "description": "serves an object with the user matching the id requested",
+    "queries": [],
+    "exampleResponse": {
+      "user": {
+        "username" : "bl", 
+        "avatar_url" : "https//:blabla.img", 
+        "name": "marie"
+      }
     }
   }
 }
+
+

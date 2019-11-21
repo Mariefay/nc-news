@@ -51,7 +51,7 @@ exports.postComment = (req, res, next) => {
     .then(comment => {
       if (comment.length < 1)
         return next({ status: 404, msg: "Article Not Found" });
-      res.status(201).send({ comment: comment });
+      res.status(201).send({ comment: comment[0] });
     })
     .catch(next);
 };
