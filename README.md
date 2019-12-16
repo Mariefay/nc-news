@@ -1,12 +1,28 @@
 # nc-news
 
-NC-News is a news website that allows you to navigate through the different articles or topics and interact with them. 
-Frontend part created with React, backend with Express.
+NC-News is a 2 weeks project created as part of the Northcoders Bootcamp. The aim is to create a news website that allows you to navigate through the different articles, topics and users and interact with them (logging in, posting comments or upvoting/downvoting...). This github project is the backend part, created with Express and hosted on heroku.  
+Links to the frontend and hosted version are available below.
 
-## Installation
+
+## Installation and available scripts
+
+To run the project locally :
 
 ```bash
 npm install
+npm start
+```
+
+To run the tests :
+
+```bash
+npm test
+```
+
+To run the tests on the util functions used in the seed file :
+
+```bash
+npm test-utils
 ```
 
 ## List of available Endpoints
@@ -25,6 +41,10 @@ DELETE /api/comments/:comment_id
 GET /api
 ```
 
-## Contributing
+## Useful links
 
-Pull requests are welcome
+Link to the hosted version : https://nc-news-api-marie.herokuapp.com/api
+This gives a description of all the available endpoints and their output.
+
+Link to the frontend github repository : https://github.com/Mariefay/nc-news-FE
+Link to the hosted version of the frontend : https://marie-nc-news-frontend.herokuapp.com/
